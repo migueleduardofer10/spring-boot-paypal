@@ -16,55 +16,62 @@ import com.paypal.api.payments.RedirectUrls;
 import com.paypal.api.payments.Transaction;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
-
-@Service
+@Service  // Esta anotación define la clase como un servicio en el framework de Spring.
 public class PaypalService {
-	
-	@Autowired
+
+	@Autowired  // Spring inyectará automáticamente un objeto APIContext en esta variable.
 	private APIContext apiContext;
-	
-	
+
+	// Método para crear un pago en PayPal.
 	public Payment createPayment(
-			Double total, 
-			String currency, 
+			Double total,
+			String currency,
 			String method,
 			String intent,
-			String description, 
-			String cancelUrl, 
+			String description,
+			String cancelUrl,
 			String successUrl) throws PayPalRESTException{
-		Amount amount = new Amount();
-		amount.setCurrency(currency);
+
+		Amount amount = new Amount();  // Crea un nuevo objeto Amount.
+		amount.setCurrency(currency);  // Establece la moneda para el monto.
+		// Formatea el total a dos decimales.
 		total = new BigDecimal(total).setScale(2, RoundingMode.HALF_UP).doubleValue();
-		amount.setTotal(String.format("%.2f", total));
+		amount.setTotal(String.format("%.2f", total));  // Establece el total para el monto.
 
-		Transaction transaction = new Transaction();
-		transaction.setDescription(description);
-		transaction.setAmount(amount);
+		Transaction transaction = new Transaction();  // Crea un nuevo objeto Transaction.
+		transaction.setDescription(description);  // Establece la descripción para la transacción.
+		transaction.setAmount(amount);  // Establece el monto para la transacción.
 
-		List<Transaction> transactions = new ArrayList<>();
-		transactions.add(transaction);
+		List<Transaction> transactions = new ArrayList<>();  // Crea una lista para guardar las transacciones.
+		transactions.add(transaction);  // Añade la transacción a la lista.
 
-		Payer payer = new Payer();
-		payer.setPaymentMethod(method.toString());
+		Payer payer = new Payer();  // Crea un nuevo objeto Payer.
+		payer.setPaymentMethod(method.toString());  // Establece el método de pago.
 
-		Payment payment = new Payment();
-		payment.setIntent(intent.toString());
-		payment.setPayer(payer);  
-		payment.setTransactions(transactions);
-		RedirectUrls redirectUrls = new RedirectUrls();
-		redirectUrls.setCancelUrl(cancelUrl);
-		redirectUrls.setReturnUrl(successUrl);
-		payment.setRedirectUrls(redirectUrls);
+		Payment payment = new Payment();  // Crea un nuevo objeto Payment.
+		payment.setIntent(intent.toString());  // Establece la intención del pago.
+		payment.setPayer(payer);  // Establece el pagador del pago.
+		payment.setTransactions(transactions);  // Establece las transacciones del pago.
 
-		return payment.create(apiContext);
+		RedirectUrls redirectUrls = new RedirectUrls();  // Crea un nuevo objeto RedirectUrls.
+		redirectUrls.setCancelUrl(cancelUrl);  // Establece la URL de cancelación.
+		redirectUrls.setReturnUrl(successUrl);  // Establece la URL de éxito.
+		payment.setRedirectUrls(redirectUrls);  // Establece las URLs de redirección para el pago.
+
+		return payment.create(apiContext);  // Crea el pago en PayPal y lo devuelve.
+
 	}
-	
+
+	// Método para ejecutar un pago en PayPal.
 	public Payment executePayment(String paymentId, String payerId) throws PayPalRESTException{
-		Payment payment = new Payment();
-		payment.setId(paymentId);
-		PaymentExecution paymentExecute = new PaymentExecution();
-		paymentExecute.setPayerId(payerId);
-		return payment.execute(apiContext, paymentExecute);
+
+		Payment payment = new Payment();  // Crea un nuevo objeto Payment.
+		payment.setId(paymentId);  // Establece el ID del pago.
+
+		PaymentExecution paymentExecute = new PaymentExecution();  // Crea un nuevo objeto PaymentExecution.
+		paymentExecute.setPayerId(payerId);  // Establece el ID del pagador.
+
+		return payment.execute(apiContext, paymentExecute);  // Ejecuta el pago y lo devuelve.
 	}
 
 }
